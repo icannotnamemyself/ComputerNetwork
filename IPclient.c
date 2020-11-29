@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     int client_fd;
     struct sockaddr_in ser_addr;
 
-    client_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    client_fd = socket(AF_INET, SOCK_DGRAM,IPPROTO_IP);
     if(client_fd < 0)
     {
         printf("create socket fail!\n");

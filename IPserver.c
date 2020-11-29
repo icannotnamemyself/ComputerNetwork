@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     int server_fd, ret;
     struct sockaddr_in ser_addr;
 
-    server_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); //AF_INET:IPV4;SOCK_DGRAM:UDP
+    server_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP); //AF_INET:IPV4;SOCK_DGRAM:UDP
     if(server_fd < 0)
     {
         printf("create socket fail!\n");
