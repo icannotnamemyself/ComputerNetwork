@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/IPServer.dir/IPserver.c.o  -o IPServer 

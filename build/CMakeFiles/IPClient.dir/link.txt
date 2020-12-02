@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/IPClient.dir/IPclient.c.o  -o IPClient 

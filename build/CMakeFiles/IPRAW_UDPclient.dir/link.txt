@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/IPRAW_UDPclient.dir/IPRAW_UDPclient.c.o  -o IPRAW_UDPclient 

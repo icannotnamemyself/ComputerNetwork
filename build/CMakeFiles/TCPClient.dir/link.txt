@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/TCPClient.dir/TCPclient.c.o  -o TCPClient 

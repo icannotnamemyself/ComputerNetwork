@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhanan/computerNet/TCPserver.c
+stdio.h
+-
+sys/socket.h
+-
+netinet/in.h
+-
+stdlib.h
+-
+arpa/inet.h
+-
+unistd.h
+-
+string.h
+-
+

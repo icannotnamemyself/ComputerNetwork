@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhanan/computerNet/IPRAW_UDPclient.c
+stdio.h
+-
+stdlib.h
+-
+unistd.h
+-
+string.h
+-
+netdb.h
+-
+sys/types.h
+-
+sys/socket.h
+-
+netinet/in.h
+-
+netinet/ip.h
+-
+netinet/udp.h
+-
+arpa/inet.h
+-
+sys/ioctl.h
+-
+bits/ioctls.h
+-
+net/if.h
+-
+errno.h
+-
+

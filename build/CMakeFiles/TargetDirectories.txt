@@ -1,0 +1,9 @@
+/home/zhanan/computerNet/build/CMakeFiles/IPClient.dir
+/home/zhanan/computerNet/build/CMakeFiles/rebuild_cache.dir
+/home/zhanan/computerNet/build/CMakeFiles/IPRAW_UDPclient.dir
+/home/zhanan/computerNet/build/CMakeFiles/IPServer.dir
+/home/zhanan/computerNet/build/CMakeFiles/TCPServer.dir
+/home/zhanan/computerNet/build/CMakeFiles/edit_cache.dir
+/home/zhanan/computerNet/build/CMakeFiles/TCPClient.dir
+/home/zhanan/computerNet/build/CMakeFiles/UDPServer.dir
+/home/zhanan/computerNet/build/CMakeFiles/UDPClient.dir
