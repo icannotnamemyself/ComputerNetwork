@@ -24,4 +24,7 @@ IPRAW_UDPClient
  ### TCP
  
  TCPServer
+
  TCPClient
+	输入end结束连接， Server会返回一个消息
+	输入其他任意字符串发送a-z给服务器
