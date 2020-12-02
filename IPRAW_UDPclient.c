@@ -101,13 +101,20 @@ main (int argc, char **argv)
   freeaddrinfo (res);
 
   // UDP data
-  datalen = 4;
-  data[0] = 'T';
-  data[1] = 'e';
-  data[2] = 's';
-  data[3] = 't';
+  //datalen = 4;
+  //data[0] = 'T';
+  //data[1] = 'e';
+  //data[2] = 's';
+  //data[3] = 't';
+datalen = 1;
+data[0]='A';
+
+int id= 0; 
+while(1){
+
 
   // IPv4 header
+data[0] ='A' + id++%26;
 
   // IPv4 header length (4 bits): Number of 32-bit words in header = 5
   iphdr.ip_hl = IP4_HDRLEN / sizeof (uint32_t);
@@ -216,7 +223,6 @@ main (int argc, char **argv)
     exit (EXIT_FAILURE);
   }
 
-while(1){
 
   // Send packet.
   if (sendto (sd, packet, IP4_HDRLEN + UDP_HDRLEN + datalen, 0, (struct sockaddr *) &sin, sizeof (struct sockaddr)) < 0)  {
@@ -226,6 +232,8 @@ while(1){
 sleep(1);
 
 printf("send data: %s\n", data);
+
+
 }
 
 
