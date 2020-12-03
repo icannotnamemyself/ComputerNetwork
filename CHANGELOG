@@ -7,3 +7,5 @@ author: yeweiwei
 
 2020 12-3:
 	- UDPClient can set server_ip:port freely with argv[1] and argv[2]
+	- TCPClient can set server_ip:port freely with argv[1] and argv[2]
+	- IPRAW can set server_ip:port freely with argv[1] and argv[2]

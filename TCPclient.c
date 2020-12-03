@@ -5,16 +5,23 @@
 #include<arpa/inet.h>
 #include<sys/socket.h>
 
-int main(){
+int main(int argc, char * argv[]){
+    if(argc < 3){
+	printf("请输入目的地址与端口号! \n");
+	return 0;
+    } 
+
 	//创建套接字
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	//服务器的ip为本地，端口号1234
+	//服务器的ip为本地，端口号自由制定
 	struct sockaddr_in serv_addr;
 	memset(&serv_addr, 0, sizeof(serv_addr));
+
+	//设置目的地址
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	serv_addr.sin_port = htons(1234);
+	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+	serv_addr.sin_port = htons(atoi(argv[2]));
 	
 	//向服务器发送连接请求
 	connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
@@ -30,7 +37,7 @@ int main(){
 			write(sock, buffer, sizeof(buffer));
 			sleep(0.5);  //睡眠0.5s
 		}
-
+	
 		printf("Please write:");
 		scanf("%s", buffer);
 	}

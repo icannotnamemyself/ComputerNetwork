@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>           // close()
@@ -6,9 +7,9 @@
 #include <netdb.h>            // struct addrinfo
 #include <sys/types.h>        // needed for socket(), uint8_t, uint16_t, uint32_t
 #include <sys/socket.h>       // needed for socket()
-#include <netinet/in.h>       // IPPROTO_RAW, IPPROTO_IP, IPPROTO_UDP, INET_ADDRSTRLEN
+#include <netinet/in.h>       // IPPROTO_RAW, IPPROTO_IP, IPPROTO_ICMP, INET_ADDRSTRLEN
 #include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
-#include <netinet/udp.h>      // struct udphdr
+#include <netinet/ip_icmp.h>  // struct icmp, ICMP_ECHO
 #include <arpa/inet.h>        // inet_pton() and inet_ntop()
 #include <sys/ioctl.h>        // macro ioctl is defined
 #include <bits/ioctls.h>      // defines values for argument "request" of ioctl.
@@ -18,11 +19,10 @@
 
 // Define some constants.
 #define IP4_HDRLEN 20         // IPv4 header length
-#define UDP_HDRLEN  8         // UDP header length, excludes data
+#define ICMP_HDRLEN 8         // ICMP header length for echo request, excludes data
 
 // Function prototypes
 uint16_t checksum (uint16_t *, int);
-uint16_t udp4_checksum (struct ip, struct udphdr, uint8_t *, int);
 char *allocate_strmem (int);
 uint8_t *allocate_ustrmem (int);
 int *allocate_intmem (int);
@@ -30,15 +30,11 @@ int *allocate_intmem (int);
 int
 main (int argc, char **argv)
 {
-    if(argc < 3){
-	printf("请输入目的地址与端口号! \n");
-	return 0;
-    } 
   int status, datalen, sd, *ip_flags;
   const int on = 1;
   char *interface, *target, *src_ip, *dst_ip;
   struct ip iphdr;
-  struct udphdr udphdr;
+  struct icmp icmphdr;
   uint8_t *data, *packet;
   struct addrinfo hints, *res;
   struct sockaddr_in *ipv4, sin;
@@ -55,8 +51,7 @@ main (int argc, char **argv)
   ip_flags = allocate_intmem (4);
 
   // Interface to send packet through.
-  //strcpy (interface, "ens33");
-  strcpy (interface, "lo");
+  strcpy (interface, "ens33");
 
   // Submit request for a socket descriptor to look up interface.
   if ((sd = socket (AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0) {
@@ -77,12 +72,10 @@ main (int argc, char **argv)
   printf ("Index for interface %s is %i\n", interface, ifr.ifr_ifindex);
 
   // Source IPv4 address: you need to fill this out
-  //strcpy (src_ip, "192.168.163.132");
-  strcpy (src_ip, "127.0.0.1");
+  strcpy (src_ip, "192.168.163.132");
 
   // Destination URL or IPv4 address: you need to fill this out
-  //strcpy (target, "www.google.com");
-  strcpy (target, argv[1]); //地址
+  strcpy (target, "www.baidu.com");
 
   // Fill out hints for getaddrinfo().
   memset (&hints, 0, sizeof (struct addrinfo));
@@ -104,21 +97,14 @@ main (int argc, char **argv)
   }
   freeaddrinfo (res);
 
-  // UDP data
-  //datalen = 4;
-  //data[0] = 'T';
-  //data[1] = 'e';
-  //data[2] = 's';
-  //data[3] = 't';
-datalen = 1;
-data[0]='A';
-
-int id= 0; 
-while(1){
-
+  // ICMP data
+  datalen = 4;
+  data[0] = 'T';
+  data[1] = 'e';
+  data[2] = 's';
+  data[3] = 't';
 
   // IPv4 header
-data[0] ='A' + id++%26;
 
   // IPv4 header length (4 bits): Number of 32-bit words in header = 5
   iphdr.ip_hl = IP4_HDRLEN / sizeof (uint32_t);
@@ -129,8 +115,8 @@ data[0] ='A' + id++%26;
   // Type of service (8 bits)
   iphdr.ip_tos = 0;
 
-  // Total length of datagram (16 bits): IP header + UDP header + datalen
-  iphdr.ip_len = htons (IP4_HDRLEN + UDP_HDRLEN + datalen);
+  // Total length of datagram (16 bits): IP header + ICMP header + ICMP data
+  iphdr.ip_len = htons (IP4_HDRLEN + ICMP_HDRLEN + datalen);
 
   // ID sequence number (16 bits): unused, since single datagram
   iphdr.ip_id = htons (0);
@@ -157,8 +143,8 @@ data[0] ='A' + id++%26;
   // Time-to-Live (8 bits): default to maximum value
   iphdr.ip_ttl = 255;
 
-  // Transport layer protocol (8 bits): 17 for UDP
-  iphdr.ip_p = IPPROTO_UDP;
+  // Transport layer protocol (8 bits): 1 for ICMP
+  iphdr.ip_p = IPPROTO_ICMP;
 
   // Source IPv4 address (32 bits)
   if ((status = inet_pton (AF_INET, src_ip, &(iphdr.ip_src))) != 1) {
@@ -176,30 +162,37 @@ data[0] ='A' + id++%26;
   iphdr.ip_sum = 0;
   iphdr.ip_sum = checksum ((uint16_t *) &iphdr, IP4_HDRLEN);
 
-  // UDP header
+  // ICMP header
 
-  // Source port number (16 bits): pick a number
-  udphdr.source = htons (48571);
+  // Message Type (8 bits): echo request
+  icmphdr.icmp_type = ICMP_ECHO;
 
-  // Destination port number (16 bits): pick a number
-  udphdr.dest = htons (atoi(argv[2]));
+  // Message Code (8 bits): echo request
+  icmphdr.icmp_code = 0;
 
-  // Length of UDP datagram (16 bits): UDP header + UDP data
-  udphdr.len = htons (UDP_HDRLEN + datalen);
+  // Identifier (16 bits): usually pid of sending process - pick a number
+  icmphdr.icmp_id = htons (1000);
 
-  // UDP checksum (16 bits)
-  udphdr.check = udp4_checksum (iphdr, udphdr, data, datalen);
+  // Sequence Number (16 bits): starts at 0
+  icmphdr.icmp_seq = htons (0);
+
+  // ICMP header checksum (16 bits): set to 0 when calculating checksum
+  icmphdr.icmp_cksum = 0;
 
   // Prepare packet.
 
   // First part is an IPv4 header.
-  memcpy (packet, &iphdr, IP4_HDRLEN * sizeof (uint8_t));
+  memcpy (packet, &iphdr, IP4_HDRLEN);
 
   // Next part of packet is upper layer protocol header.
-  memcpy ((packet + IP4_HDRLEN), &udphdr, UDP_HDRLEN * sizeof (uint8_t));
+  memcpy ((packet + IP4_HDRLEN), &icmphdr, ICMP_HDRLEN);
 
-  // Finally, add the UDP data.
-  memcpy (packet + IP4_HDRLEN + UDP_HDRLEN, data, datalen * sizeof (uint8_t));
+  // Finally, add the ICMP data.
+  memcpy (packet + IP4_HDRLEN + ICMP_HDRLEN, data, datalen);
+
+  // Calculate ICMP header checksum
+  icmphdr.icmp_cksum = checksum ((uint16_t *) (packet + IP4_HDRLEN), ICMP_HDRLEN + datalen);
+  memcpy ((packet + IP4_HDRLEN), &icmphdr, ICMP_HDRLEN);
 
   // The kernel is going to prepare layer 2 information (ethernet frame header) for us.
   // For that, we need to specify a destination for the kernel in order for it
@@ -227,19 +220,11 @@ data[0] ='A' + id++%26;
     exit (EXIT_FAILURE);
   }
 
-
   // Send packet.
-  if (sendto (sd, packet, IP4_HDRLEN + UDP_HDRLEN + datalen, 0, (struct sockaddr *) &sin, sizeof (struct sockaddr)) < 0)  {
+  if (sendto (sd, packet, IP4_HDRLEN + ICMP_HDRLEN + datalen, 0, (struct sockaddr *) &sin, sizeof (struct sockaddr)) < 0)  {
     perror ("sendto() failed ");
     exit (EXIT_FAILURE);
   }
-sleep(1);
-
-printf("send data: %s\n", data);
-
-
-}
-
 
   // Close socket descriptor.
   close (sd);
@@ -287,77 +272,6 @@ checksum (uint16_t *addr, int len)
   answer = ~sum;
 
   return (answer);
-}
-
-// Build IPv4 UDP pseudo-header and call checksum function.
-uint16_t
-udp4_checksum (struct ip iphdr, struct udphdr udphdr, uint8_t *payload, int payloadlen)
-{
-  char buf[IP_MAXPACKET];
-  char *ptr;
-  int chksumlen = 0;
-  int i;
-
-  ptr = &buf[0];  // ptr points to beginning of buffer buf
-
-  // Copy source IP address into buf (32 bits)
-  memcpy (ptr, &iphdr.ip_src.s_addr, sizeof (iphdr.ip_src.s_addr));
-  ptr += sizeof (iphdr.ip_src.s_addr);
-  chksumlen += sizeof (iphdr.ip_src.s_addr);
-
-  // Copy destination IP address into buf (32 bits)
-  memcpy (ptr, &iphdr.ip_dst.s_addr, sizeof (iphdr.ip_dst.s_addr));
-  ptr += sizeof (iphdr.ip_dst.s_addr);
-  chksumlen += sizeof (iphdr.ip_dst.s_addr);
-
-  // Copy zero field to buf (8 bits)
-  *ptr = 0; ptr++;
-  chksumlen += 1;
-
-  // Copy transport layer protocol to buf (8 bits)
-  memcpy (ptr, &iphdr.ip_p, sizeof (iphdr.ip_p));
-  ptr += sizeof (iphdr.ip_p);
-  chksumlen += sizeof (iphdr.ip_p);
-
-  // Copy UDP length to buf (16 bits)
-  memcpy (ptr, &udphdr.len, sizeof (udphdr.len));
-  ptr += sizeof (udphdr.len);
-  chksumlen += sizeof (udphdr.len);
-
-  // Copy UDP source port to buf (16 bits)
-  memcpy (ptr, &udphdr.source, sizeof (udphdr.source));
-  ptr += sizeof (udphdr.source);
-  chksumlen += sizeof (udphdr.source);
-
-  // Copy UDP destination port to buf (16 bits)
-  memcpy (ptr, &udphdr.dest, sizeof (udphdr.dest));
-  ptr += sizeof (udphdr.dest);
-  chksumlen += sizeof (udphdr.dest);
-
-  // Copy UDP length again to buf (16 bits)
-  memcpy (ptr, &udphdr.len, sizeof (udphdr.len));
-  ptr += sizeof (udphdr.len);
-  chksumlen += sizeof (udphdr.len);
-
-  // Copy UDP checksum to buf (16 bits)
-  // Zero, since we don't know it yet
-  *ptr = 0; ptr++;
-  *ptr = 0; ptr++;
-  chksumlen += 2;
-
-  // Copy payload to buf
-  memcpy (ptr, payload, payloadlen);
-  ptr += payloadlen;
-  chksumlen += payloadlen;
-
-  // Pad to the next 16-bit boundary
-  for (i=0; i<payloadlen%2; i++, ptr++) {
-    *ptr = 0;
-    ptr++;
-    chksumlen++;
-  }
-
-  return checksum ((uint16_t *) buf, chksumlen);
 }
 
 // Allocate memory for an array of chars.

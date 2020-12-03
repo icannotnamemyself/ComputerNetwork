@@ -14,8 +14,8 @@ int main(){
 	struct sockaddr_in serv_addr;
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	serv_addr.sin_port = htons(1234);
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); //0000本机地址
+	serv_addr.sin_port = htons(12345);
 
 	//绑定文件描述符和服务器的ip和端口号
 	bind(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));

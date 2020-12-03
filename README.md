@@ -18,12 +18,12 @@ in build  directory:
 IPRAW_UDPClient
 
  ### UDP
- UDPServer
+ UDPServer  on 8888
  UDPClient
  
  ### TCP
  
- TCPServer
+ TCPServer   on 12345
 
  TCPClient
 	输入end结束连接， Server会返回一个消息
