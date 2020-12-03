@@ -111,19 +111,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named IPClient
-
-# Build rule for target.
-IPClient: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 IPClient
-.PHONY : IPClient
-
-# fast build rule for target.
-IPClient/fast:
-	$(MAKE) -f CMakeFiles/IPClient.dir/build.make CMakeFiles/IPClient.dir/build
-.PHONY : IPClient/fast
-
-#=============================================================================
 # Target rules for targets named IPRAW_UDPclient
 
 # Build rule for target.
@@ -135,19 +122,6 @@ IPRAW_UDPclient: cmake_check_build_system
 IPRAW_UDPclient/fast:
 	$(MAKE) -f CMakeFiles/IPRAW_UDPclient.dir/build.make CMakeFiles/IPRAW_UDPclient.dir/build
 .PHONY : IPRAW_UDPclient/fast
-
-#=============================================================================
-# Target rules for targets named IPServer
-
-# Build rule for target.
-IPServer: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 IPServer
-.PHONY : IPServer
-
-# fast build rule for target.
-IPServer/fast:
-	$(MAKE) -f CMakeFiles/IPServer.dir/build.make CMakeFiles/IPServer.dir/build
-.PHONY : IPServer/fast
 
 #=============================================================================
 # Target rules for targets named TCPServer
@@ -227,60 +201,6 @@ IPRAW_UDPclient.s: IPRAW_UDPclient.c.s
 IPRAW_UDPclient.c.s:
 	$(MAKE) -f CMakeFiles/IPRAW_UDPclient.dir/build.make CMakeFiles/IPRAW_UDPclient.dir/IPRAW_UDPclient.c.s
 .PHONY : IPRAW_UDPclient.c.s
-
-IPclient.o: IPclient.c.o
-
-.PHONY : IPclient.o
-
-# target to build an object file
-IPclient.c.o:
-	$(MAKE) -f CMakeFiles/IPClient.dir/build.make CMakeFiles/IPClient.dir/IPclient.c.o
-.PHONY : IPclient.c.o
-
-IPclient.i: IPclient.c.i
-
-.PHONY : IPclient.i
-
-# target to preprocess a source file
-IPclient.c.i:
-	$(MAKE) -f CMakeFiles/IPClient.dir/build.make CMakeFiles/IPClient.dir/IPclient.c.i
-.PHONY : IPclient.c.i
-
-IPclient.s: IPclient.c.s
-
-.PHONY : IPclient.s
-
-# target to generate assembly for a file
-IPclient.c.s:
-	$(MAKE) -f CMakeFiles/IPClient.dir/build.make CMakeFiles/IPClient.dir/IPclient.c.s
-.PHONY : IPclient.c.s
-
-IPserver.o: IPserver.c.o
-
-.PHONY : IPserver.o
-
-# target to build an object file
-IPserver.c.o:
-	$(MAKE) -f CMakeFiles/IPServer.dir/build.make CMakeFiles/IPServer.dir/IPserver.c.o
-.PHONY : IPserver.c.o
-
-IPserver.i: IPserver.c.i
-
-.PHONY : IPserver.i
-
-# target to preprocess a source file
-IPserver.c.i:
-	$(MAKE) -f CMakeFiles/IPServer.dir/build.make CMakeFiles/IPServer.dir/IPserver.c.i
-.PHONY : IPserver.c.i
-
-IPserver.s: IPserver.c.s
-
-.PHONY : IPserver.s
-
-# target to generate assembly for a file
-IPserver.c.s:
-	$(MAKE) -f CMakeFiles/IPServer.dir/build.make CMakeFiles/IPServer.dir/IPserver.c.s
-.PHONY : IPserver.c.s
 
 TCPclient.o: TCPclient.c.o
 
@@ -396,10 +316,8 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... IPClient"
 	@echo "... rebuild_cache"
 	@echo "... IPRAW_UDPclient"
-	@echo "... IPServer"
 	@echo "... TCPServer"
 	@echo "... edit_cache"
 	@echo "... TCPClient"
@@ -408,12 +326,6 @@ help:
 	@echo "... IPRAW_UDPclient.o"
 	@echo "... IPRAW_UDPclient.i"
 	@echo "... IPRAW_UDPclient.s"
-	@echo "... IPclient.o"
-	@echo "... IPclient.i"
-	@echo "... IPclient.s"
-	@echo "... IPserver.o"
-	@echo "... IPserver.i"
-	@echo "... IPserver.s"
 	@echo "... TCPclient.o"
 	@echo "... TCPclient.i"
 	@echo "... TCPclient.s"

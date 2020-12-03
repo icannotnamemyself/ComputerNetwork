@@ -15,7 +15,7 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
     socklen_t len;
     struct sockaddr_in src;
     int i = 0;
-char buf[BUFF_LEN];
+    char buf[BUFF_LEN];
     while(1)
     {
         //char buf[BUFF_LEN] = "TEST UDP MSG!\n";
@@ -38,6 +38,13 @@ char buf[BUFF_LEN];
 
 int main(int argc, char* argv[])
 {
+    if(argc < 3){
+	printf("请输入目的地址与端口号! \n");
+	return 0;
+    } 
+
+
+
     int client_fd;
     struct sockaddr_in ser_addr;
 
@@ -50,9 +57,11 @@ int main(int argc, char* argv[])
 
     memset(&ser_addr, 0, sizeof(ser_addr));
     ser_addr.sin_family = AF_INET;
-    //ser_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
-    ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);  //注意网络序转换
-    ser_addr.sin_port = htons(SERVER_PORT);  //注意网络序转换
+    ser_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    //ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);  //注意网络序转换
+    //ser_addr.sin_port = htons(SERVER_PORT);  //注意网络序转换
+    ser_addr.sin_port =htons(atoi(argv[2]));  //注意网络序转换
+
 
     udp_msg_sender(client_fd, (struct sockaddr*)&ser_addr);
 

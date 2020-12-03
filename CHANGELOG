@@ -5,3 +5,5 @@ author: yeweiwei
 	- add new feature: IP RAW send UDP packet
 	- fix CMakeLists.txt: complie tcp to udp
 
+2020 12-3:
+	- UDPClient can set server_ip:port freely with argv[1] and argv[2]
