@@ -4,34 +4,43 @@
 #include <netinet/in.h>
 #include <string.h>
 #include "proto.h"
+
+
 #define SERVER_PORT 8888
 #define BUFF_LEN 1024
 
 void handle_udp_msg(int fd)
 {
     char buf[BUFF_LEN];  //接收缓冲区，1024字节
+    char recv_buf[PACKET_LEN]; //包接收缓冲区， 65540字节
     socklen_t len;
     int count;
     struct sockaddr_in clent_addr;  //clent_addr用于记录发送方的地址信息
+    struct procol_packet pp;  //procol 协议
+
     while(1)
     {
-	char rec_char;
-        memset(buf, 0, BUFF_LEN);
+//        char rec_char;
+        memset(recv_buf, 0, PACKET_LEN);
         len = sizeof(clent_addr);
-	//
-	printf("wating for client\n");
-        count = recvfrom(fd, buf, BUFF_LEN, 0, (struct sockaddr*)&clent_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
+        //
+        printf("wating for client\n");
+        count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&clent_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
         if(count == -1)
         {
             printf("recieve data fail!\n");
             return;
         }
-        rec_char = buf[0];
-        printf("received:%s\n",buf);  //打印client发过来的信息
-        memset(buf, 0, BUFF_LEN);
-        sprintf(buf, "I have recieved your %d bytes data!\n", count);  //回复client
-        printf("server send:%s\n",buf);  //打印自己发送的信息给
-        sendto(fd, buf, BUFF_LEN, 0, (struct sockaddr*)&clent_addr, len);  //发送信息给client，注意使用了clent_addr结构体指针
+        printf("recieve data success!\n");
+        buffer_to_packet(recv_buf , &pp);
+        packet_print(stdout, &pp);
+
+//        rec_char = buf[0];
+//        printf("received:%s\n",buf);  //打印client发过来的信息
+//        memset(buf, 0, BUFF_LEN);
+//        sprintf(buf, "I have recieved your %d bytes data!\n", count);  //回复client
+//        printf("server send:%s\n",buf);  //打印自己发送的信息给
+//        sendto(fd, buf, BUFF_LEN, 0, (struct sockaddr*)&clent_addr, len);  //发送信息给client，注意使用了clent_addr结构体指针
 
     }
 }

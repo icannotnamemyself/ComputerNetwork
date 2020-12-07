@@ -20,10 +20,10 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
     socklen_t len;
     struct sockaddr_in src;
     int i = 0;
-
-
     char send_buf[PACKET_LEN];
-    char buf[BUFF_LEN];
+    struct procol_packet pp;
+
+    //    char buf[BUFF_LEN];
     printf("handle sendimsg!!!\n");
     //certificate pack
     struct procol_packet pack;
@@ -35,21 +35,20 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
     sprintf(pack.data+1,"%hu", 0x0010); // data len : 16 bytes
     pack.check_sum = 0; //no need to check
 
+    //cpy to send_buf
     memcpy(send_buf, &pack, PACKET_LEN);
     printf("sending connect packet to\n");
-    fprintf(stdout, "sending connect packet to\n");
+
 
 
     while(1)
     {
-//        printf("sdfsd");
-        struct procol_packet pp;
+        fprintf(stdout, "sending connect packet to\n");
+        len = sizeof(*dst);
+
         buffer_to_packet(send_buf, &pp);
-//        buffer_to_packet(send_buf , &pp);
-//        packet_print(stdout, &pp);
-//    packet_buf_print(stdout, );
-    //发送认证包
-    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
+        packet_print(stdout, &pp);
+        sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
 
 
 #if 0

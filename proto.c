@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
-#include "proto.h"
+#include <proto.h>
 
 #define SERVER_PORT 8888
 #define BUFF_LEN 512
@@ -48,13 +48,7 @@ void buffer_to_packet(const char * buf , struct  procol_packet * pkt){
     sprintf(pkt->data , buf+4);
     pkt->check_sum = buf[PACKET_LEN - 1];
 
-//    fprintf(stream , "version:%x\n", send_buf[0]);
-//    fprintf(stream , "type: %x\n", send_buf[1]);
-//    fprintf(stream, "data_len:%x bytes\n", * (unsigned short *)(send_buf+2));
-//    fprintf(stream, "data: %s \n" , send_buf+4);
-//    fprintf(stream, "check_sum:%x\n" , send_buf[PACKET_LEN -1]);
 
-//    fprintf(stream , "\n");
 }
 
 
