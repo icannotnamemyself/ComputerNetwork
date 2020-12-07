@@ -48,9 +48,17 @@ void buffer_to_packet(const char * buf , struct  procol_packet * pkt){
     sprintf(pkt->data , buf+4);
     pkt->check_sum = buf[PACKET_LEN - 1];
 
-
 }
 
+void gen_packet(char type , short data_len , char * data, struct  procol_packet * pkt){
+
+    pkt->version = VERSION;
+    pkt->type = type;
+    pkt->data_len= data_len;
+    sprintf(pkt->data , data);
+
+    pkt->check_sum = 0; //校验和为0
+}
 
 
 
