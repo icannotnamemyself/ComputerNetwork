@@ -21,9 +21,11 @@ void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
          //接收客户端数据
          printf("wait for data...\n");
          count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&clent_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
+
          buffer_to_packet(recv_buf , &recv_pkt);
          packet_print(stdout, &recv_pkt);
-       }while (1) ;
+        fflush(stdout);
+     }while (1) ;
 }
 
 
@@ -55,7 +57,7 @@ void handle_udp_msg(int fd)
         return;
     }
     printf("recieve data success!\n");
-
+    buffer_to_packet(recv_buf, &recv_pkt);
     if(recv_pkt.type == CONNECT)
         printf("数据单元类型为1 : 建立连接\n");
     else {
@@ -68,7 +70,7 @@ void handle_udp_msg(int fd)
 
     data_block_len = recv_pkt.data_len;
     printf("是否要求客户端进行认证?(输入1或0):");
-    scanf(" %d ", &is_cert);
+    scanf(" %d", &is_cert);
 
 
     if(is_cert=0){
@@ -84,8 +86,9 @@ void handle_udp_msg(int fd)
         send_pkt.check_sum = 0; //no need to check
         memcpy(send_buf, &send_pkt, PACKET_LEN);
         //服务器发送口令请求
-        sendto(fd, send_buf, PACKET_LEN, 0, (struct sockaddr*)&clent_addr, len);  //发送信息给client，注意使用了clent_addr结构体指针
 
+        sendto(fd, send_buf, PACKET_LEN, 0, (struct sockaddr*)&clent_addr, len);  //发送信息给client，注意使用了clent_addr结构体指针
+        printf("建立连接......\n");
         //连接成功建立
         is_connected=1;
 

@@ -24,27 +24,75 @@ void client_handle_connected(int fd , struct sockaddr* oserver_addr){
 
     while (1) {
 
-        memset(send_buf,0,PACKET_LEN);
-        memset(buf, 0  , 1024);
-        printf("请输入数据:\n");
-        scanf(" %s ", buf);
+        send_data_pack(fd, oserver_addr);
+//        memset(send_buf,0,PACKET_LEN);
+//        memset(buf, 0  , 1024);
+//        printf("请输入数据:\n");
+//        scanf(" %s", buf);
 
-        //create proto package
-        send_pkt.version = 5;
-        send_pkt.type= DATA;
-        send_pkt.data_len= 1024; //3 byte
-        memset(send_pkt.data, 0, MAX_DATA); //set 0
-        memcpy(send_pkt.data,  buf, strlen(buf));
-        //sprintf(send_pkt.data, "%c", 0x00); //需要认证
-        //sprintf(send_pkt.data+1,"%hu", 0x0010); // data len : 16 bytes
-        send_pkt.check_sum = 0; //no need to check
-        memcpy(send_buf, &send_pkt, PACKET_LEN);  //cpy to send_buf
-        sendto(fd,  send_buf, PACKET_LEN, 0, oserver_addr, len);
+//        //create proto package
+//        send_pkt.version = 5;
+//        send_pkt.type= DATA;
+//        send_pkt.data_len= 1024; //3 byte
+//        memset(send_pkt.data, 0, MAX_DATA); //set 0
+//        memcpy(send_pkt.data,  buf, strlen(buf));
+//        //sprintf(send_pkt.data, "%c", 0x00); //需要认证
+//        //sprintf(send_pkt.data+1,"%hu", 0x0010); // data len : 16 bytes
+//        send_pkt.check_sum = 0; //no need to check
+//        memcpy(send_buf, &send_pkt, PACKET_LEN);  //cpy to send_buf
+//        sendto(fd,  send_buf, PACKET_LEN, 0, oserver_addr, len);
 
         sleep(1);
     }
 }
 
+void send_data_pack(int fd, struct sockaddr * dst){
+
+    int len = sizeof (*dst);
+    struct procol_packet pack;
+    char send_buf[PACKET_LEN];
+    char buf[MAX_DATA];
+
+    memset(send_buf,0,PACKET_LEN);
+    memset(buf, 0  , 1024);
+
+    printf("请输入数据:");
+    scanf("%s", buf);
+
+    pack.version = 5;
+    pack.type= DATA;
+    pack.data_len= 3; //3 byte
+    memset(pack.data, 0, MAX_DATA); //set 0
+    memcpy(pack.data,  buf, MAX_DATA);
+    pack.check_sum = 0; //no need to check
+    //cpy to send_buf
+    memcpy(send_buf, &pack, PACKET_LEN);
+    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
+
+    buffer_to_packet(send_buf , &pack);
+    packet_print(stdout, &pack);
+    /////
+}
+
+
+void send_request_connect_pack(int fd, struct sockaddr * dst){
+    /////
+
+    int len = sizeof (*dst);
+    struct procol_packet pack;
+    char send_buf[PACKET_LEN];
+    pack.version = 5;
+    pack.type= CONNECT;
+    pack.data_len= 3; //3 byte
+    memset(pack.data, 0, MAX_DATA); //set 0
+    sprintf(pack.data, "%c", 0xff); //需要认证
+    sprintf(pack.data+1,"%hu", 0x0010); // data len : 16 bytes
+    pack.check_sum = 0; //no need to check
+    //cpy to send_buf
+    memcpy(send_buf, &pack, PACKET_LEN);
+    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
+    /////
+}
 //
 //
 void udp_msg_sender(int fd, struct sockaddr* dst)
@@ -65,7 +113,7 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
 
     len = sizeof(*dst);
     memset(recv_buf, 0, PACKET_LEN);
-    memset(send_buf, 0, PACKET_LEN);
+    //memset(send_buf, 0, PACKET_LEN);
 
     //create proto package
     send_pkt.version = 5;
@@ -75,16 +123,22 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
     sprintf(send_pkt.data, "%c", 0xff); //不需要认证
     sprintf(send_pkt.data+1,"%hu", 0x0010); // data len : 16 bytes
     send_pkt.check_sum = 0; //no need to check
+
+
     memcpy(send_buf, &send_pkt, PACKET_LEN);  //cpy to send_buf
+    //send_request_connect_pack(fd, dst);
+    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
 
-
+    //scanf会影响sendto...????
     printf("正在请求建立连接， 请输入数据块大小:");
     scanf(" %d", &data_block_len);
+
     //buffer_to_packet(send_buf, &send_pkt);
     buffer_to_packet(send_buf, &pp);
     packet_print(stdout, &pp);
     fprintf(stdout, "sending connect packet to server\n");
-    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
+
+
 
     //接收服务器响应， 需要认证时则进行认证，不需要代表连接建立
     count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&server_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
@@ -99,7 +153,7 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
         is_cert = 1;
     }
 
-    if(is_cert = 0){
+    if(is_cert == 0){
         is_connected = 1;
         client_handle_connected(fd, dst);
     }else{
@@ -133,8 +187,8 @@ len = sizeof(*dst);
 int main(int argc, char* argv[])
 {
     if(argc < 3){
-	printf("请输入目的地址与端口号! \n");
-	return 0;
+    printf("请输入目的地址与端口号! \n");
+    return 0;
     }
 
 
@@ -154,7 +208,7 @@ int main(int argc, char* argv[])
     //ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);  //注意网络序转换
     //ser_addr.sin_port = htons(SERVER_PORT);  //注意网络序转换
     ser_addr.sin_port =htons(atoi(argv[2]));  //注意网络序转换
-    printf("连接: %s:%s" , argv[1], argv[2]);
+    printf("连接: %s:%s\n" , argv[1], argv[2]);
     udp_msg_sender(client_fd, (struct sockaddr*)&ser_addr);
     close(client_fd);
 
