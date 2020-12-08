@@ -28,15 +28,23 @@ void packet_buf_print(FILE * stream , char* send_buf){
     fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "\n");
 }
+void print_bytes(char * str,char * start, int len) {
+     int i;
+     for (i = 0; i < len; i++)
+        sprintf(str," %.2x", (char)(start+i));    //line:data:show_bytes_printf
 
+}
 
 
 void packet_print(FILE * stream , struct procol_packet * pkt){
     fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "version:%x\n", pkt->version);
     fprintf(stream , "type: %x\n", pkt->type);
+    char buf[MAX_DATA];
+    memset(buf , 0 , MAX_DATA);
+    print_bytes(buf, pkt->data, pkt->data_len);
     fprintf(stream, "data_len:%x bytes\n", pkt->data_len);
-    fprintf(stream, "data: %s \n" , pkt->data);
+    fprintf(stream, "data:(asci:%s  | hex:%s)\n" , pkt->data,buf);
     fprintf(stream, "check_sum:%x\n" , pkt->check_sum);
     fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "\n");

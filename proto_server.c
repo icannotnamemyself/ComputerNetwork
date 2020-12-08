@@ -10,7 +10,7 @@
 #define BUFF_LEN 1024
 
 //双方约定的口令
-char * TOKEN ="ABCDEFG";
+static char * TOKEN ="ABCDEFG";
 
 void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
 
@@ -105,10 +105,36 @@ void handle_udp_msg(int fd)
     scanf(" %d", &is_cert);
 
 
+
     if(is_cert){
+        //需要进行认证
+        sprintf(buf ,"%c", (char)0xff);
+
+        send_proto_packet(fd , (struct sockaddr*)&clent_addr,CERTIFICATE
+                          ,1,buf,send_buf
+                          );
+
+
+        //接收认证口令
+        count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&clent_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
+        buffer_to_packet(recv_buf ,  &recv_pkt);
+        if(strcmp(TOKEN, recv_pkt.data) ==0){
+            printf("口令正确， 认证成功....\n建立连接...\n");
+
+            send_proto_packet(fd , (struct sockaddr*)&clent_addr,CONNECT
+                              ,2,"\0\0",send_buf
+                              );
+            is_connected=1;
+        }else{
+            printf("口令错误，认证失败....断开连接!\n");
+            send_proto_packet(fd , (struct sockaddr*)&clent_addr,DISCONNECT
+                              ,2,"\0\0",send_buf
+                              );
+            return ;
+        }
+
 
     }else {
-
         send_proto_packet(fd , (struct sockaddr*)&clent_addr,CONNECT
                           ,2,"\0\0",send_buf
                           );

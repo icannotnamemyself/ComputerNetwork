@@ -5,10 +5,13 @@
 #include <netinet/in.h>
 #include <string.h>
 #include "proto.h"
+
 #define SERVER_PORT 8888
 #define BUFF_LEN 512
 #define SERVER_IP "172.0.5.182"
 
+#define TOKEN_LEN 7
+static char * TOKEN ="ABCDEFG";
 
 void client_handle_connected(int fd , struct sockaddr* oserver_addr){
 
@@ -131,7 +134,6 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
     fprintf(stdout, "等待服务器响应连接请求....\n");
 
 
-
     //接收服务器响应， 需要认证时则进行认证，不需要代表连接建立
     count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&server_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
     buffer_to_packet(recv_buf, &recv_pkt);
@@ -146,11 +148,39 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
 
     if(is_cert == 0){
         is_connected = 1;
-        client_handle_connected(fd, dst);
     }else{
+        //发送认证口令
+        char token_buf[1024];
+        memset(token_buf , 0, 1024);
+        printf("请输入认证口令:");
+        scanf("%s", token_buf);
 
+        send_proto_packet(fd , dst,CERTIFICATE
+                          ,strlen(token_buf),token_buf,send_buf
+                          );
+        printf("等待服务器响应...\n");
+
+        count = recvfrom(fd, recv_buf, PACKET_LEN, 0,dst, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
+        buffer_to_packet(recv_buf ,  &recv_pkt);
+
+        //看认证是否成功
+        if(recv_pkt.type == CONNECT){
+            //认证成功
+            printf("连接建立成功\n");
+            is_connected = 1;
+        }else{
+            //认证失败
+            is_connected = 0;
+
+        }
     }
 
+if(is_connected){
+    client_handle_connected(fd, dst);
+}else {
+    printf("认证失败，服务器断开连接....\n");
+    return ;
+}
 
 
     sleep(1);  //一秒发送一次消息
