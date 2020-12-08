@@ -3,15 +3,16 @@
 
 
 #include <stdio.h>
-//#define MAX_DATA 65535//max data length 16bytes
-//#define PACKET_LEN 65540
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 
 #define MAX_DATA 35535//max data length 16bytes
 #define PACKET_LEN 35540
 #define VERSION 5 //协议版本号
 
 
- enum PROCOL_DATATYPE{
+enum PROCOL_DATATYPE{
     CONNECT = 1,   //建立连接
     CERTIFICATE = 2,  //认证
     DATA = 6,  //数据
@@ -44,5 +45,11 @@ extern void packet_buf_print(FILE * stream , char* send_buf);
  * @param pkt 输出参数
  */
 extern void gen_packet(char type , short data_len , char * data, struct  procol_packet * pkt);
+
+
+extern int send_proto_packet(int fd, struct sockaddr_in  * dst,
+                             char type , short data_len , char * data,
+                             char * send_buf
+                             );
 
 #endif // PROTO

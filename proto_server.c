@@ -35,15 +35,10 @@ void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
              printf("客户端想要断开连接，是否同意?(0/1):");
              scanf(" %d", &is_disconnect);
 
-             pack.version = 5;
-             pack.type= is_disconnect?DISCONNECT:CONNECT;
-             pack.data_len= 0; //3 byte
-             memset(pack.data, 0, MAX_DATA); //set 0
-             memcpy(pack.data,  "", MAX_DATA);
-             pack.check_sum = 0; //no need to check
-             //cpy to send_buf
-             memcpy(send_buf, &pack, PACKET_LEN);
-             sendto(fd,  send_buf, PACKET_LEN, 0, oclent_addr, len);
+
+             send_proto_packet(fd , oclent_addr,is_disconnect?DISCONNECT:CONNECT
+                               ,0,"",send_buf
+                               );
 
 
              if(is_disconnect){
@@ -52,6 +47,8 @@ void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
              }else{
                  printf("不同意断开，请求客户端继续发送..\n");
              }
+
+
          }
 
 
@@ -111,18 +108,11 @@ void handle_udp_msg(int fd)
     if(is_cert){
 
     }else {
-        //certificate pack
-        send_pkt.version = 5;
-        send_pkt.type= CONNECT;
-        send_pkt.data_len= 3; //3 byte
-        memset(send_pkt.data, 0, MAX_DATA); //set 0
-        sprintf(send_pkt.data, "%c", 0x00); //不需要认证
-        sprintf(send_pkt.data+1,"%hu",data_block_len); // data len : 16 bytes
-        send_pkt.check_sum = 0; //no need to check
-        memcpy(send_buf, &send_pkt, PACKET_LEN);
-        //服务器发送口令请求
 
-        sendto(fd, send_buf, PACKET_LEN, 0, (struct sockaddr*)&clent_addr, len);  //发送信息给client，注意使用了clent_addr结构体指针
+        send_proto_packet(fd , (struct sockaddr*)&clent_addr,CONNECT
+                          ,2,"\0\0",send_buf
+                          );
+
         printf("建立连接......\n");
         //连接成功建立
         is_connected=1;
@@ -135,11 +125,6 @@ void handle_udp_msg(int fd)
 
 
     }
-
-
-
-
-
 
 }
 

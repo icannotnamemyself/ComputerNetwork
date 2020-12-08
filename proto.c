@@ -63,5 +63,29 @@ void gen_packet(char type , short data_len , char * data, struct  procol_packet 
 
 
 
+//只取数据长度
+int
+send_proto_packet(int fd, struct sockaddr_in  * dst,
+                             char type , short data_len , char * data,
+                             char * send_buf
+                             )
+{
+    struct procol_packet pack;
+    int len = sizeof(*dst);
+
+    pack.version = VERSION;
+    pack.type= type;
+    pack.data_len= data_len; //3 byte
+    memset(pack.data, 0, MAX_DATA); //set 0
+    memcpy(pack.data,  data, data_len);
+    pack.check_sum = 0; //no need to check
+
+    memcpy(send_buf, &pack, PACKET_LEN); //cpy to send_buf
+    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
+
+    packet_print(stdout, &pack);
+}
+
+
 
 

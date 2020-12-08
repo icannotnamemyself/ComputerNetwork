@@ -51,18 +51,21 @@ int send_data_pack(int fd, struct sockaddr * dst){
         printf("请输入数据:");
         scanf("%s", buf);
     }
-    pack.version = 5;
-    pack.type= DATA;
-    pack.data_len= data_len; //3 byte
-    memset(pack.data, 0, MAX_DATA); //set 0
-    memcpy(pack.data,  buf, MAX_DATA);
-    pack.check_sum = 0; //no need to check
-    //cpy to send_buf
-    memcpy(send_buf, &pack, PACKET_LEN);
-    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
+//    pack.version = 5;
+//    pack.type= DATA;
+//    pack.data_len= data_len; //3 byte
+//    memset(pack.data, 0, MAX_DATA); //set 0
+//    memcpy(pack.data,  buf, MAX_DATA);
+//    pack.check_sum = 0; //no need to check
+//    //cpy to send_buf
+//    memcpy(send_buf, &pack, PACKET_LEN);
+//    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
 
-    buffer_to_packet(send_buf , &pack);
-    packet_print(stdout, &pack);
+//    buffer_to_packet(send_buf , &pack);
+//    packet_print(stdout, &pack);
+
+
+    send_proto_packet(fd, dst, DATA , data_len, buf, send_buf);
 
 
     if(data_len ==0){
@@ -117,38 +120,20 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
 
     len = sizeof(*dst);
     memset(recv_buf, 0, PACKET_LEN);
-    //memset(send_buf, 0, PACKET_LEN);
 
-    //create proto package
-    send_pkt.version = 5;
-    send_pkt.type= CONNECT;
-    send_pkt.data_len= 3; //3 byte
-    memset(send_pkt.data, 0, MAX_DATA); //set 0
-    sprintf(send_pkt.data, "%c", 0xff); //不需要认证
-    sprintf(send_pkt.data+1,"%hu", 0x0010); // data len : 16 bytes
-    send_pkt.check_sum = 0; //no need to check
-
-    //scanf会影响sendto..原因是缓冲区
-//    printf("正在请求建立连接， 请输入数据块大小:");
-//    scanf(" %d", &data_block_len);
+    //------发送连接请求包------
+    char buf1[3];
+    sprintf(buf1, "%c", 0xff); //不需要认证
+    sprintf(buf1+1,"%hu", 0x0010); // data len : 16 bytes
+    send_proto_packet(fd, dst, CONNECT , 3, buf1, send_buf);
     fflush(stdout);
     fflush(stdin);
-
-    memcpy(send_buf, &send_pkt, PACKET_LEN);  //cpy to send_buf
-    //send_request_connect_pack(fd, dst);
-    sendto(fd,  send_buf, PACKET_LEN, 0, dst, len);
-
-
-    //buffer_to_packet(send_buf, &send_pkt);
-    buffer_to_packet(send_buf, &pp);
-    packet_print(stdout, &pp);
-    fprintf(stdout, "sending connect packet to server\n");
+    fprintf(stdout, "等待服务器响应连接请求....\n");
 
 
 
     //接收服务器响应， 需要认证时则进行认证，不需要代表连接建立
     count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&server_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
-
     buffer_to_packet(recv_buf, &recv_pkt);
 
     if(recv_pkt.data[0] ==0){
@@ -168,18 +153,7 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
 
 
 
-#if 0
-    //char buf[BUFF_LEN] = "TEST UDP MSG!\n";
-memset(buf, 0, BUFF_LEN);
-buf[0] = ('a' + i++%26);         //ascii 97
-len = sizeof(*dst);
-    printf("client send:%s\n",buf);  //打印自己发送的信息
-    sendto(fd, buf, BUFF_LEN, 0, dst, len);
-    memset(buf, 0, BUFF_LEN);
-    recvfrom(fd, buf, BUFF_LEN, 0, (struct sockaddr*)&src, &len);  //接收来自server的信息
-    printf("server send back:%s\n",buf);
-  #endif // 0
-        sleep(1);  //一秒发送一次消息
+    sleep(1);  //一秒发送一次消息
 
 }
 
