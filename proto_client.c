@@ -36,6 +36,7 @@ int send_data_pack(int fd, struct sockaddr * dst){
 
     int len = sizeof (*dst);
     struct procol_packet pack;
+    struct procol_packet send_pack;
     struct procol_packet recv_pack;
     struct sockaddr server_addr;
     char send_buf[PACKET_LEN];
@@ -70,12 +71,13 @@ int send_data_pack(int fd, struct sockaddr * dst){
 
     send_proto_packet(fd, dst, DATA , data_len, buf, send_buf);
 
+    buffer_to_packet(send_buf, &send_pack);
+    if(data_len == 0){
+        printf("尝试断开连接...\n");
 
-    if(data_len ==0){
-        printf("尝试断开连接...");
         count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&server_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
         buffer_to_packet(recv_buf , &recv_pack);
-        int res = (recv_pack.type == CONNECT);
+        int res = (unsigned char)send_pack.data[0] == 0xff;
         printf("%s", res?"服务器拒绝断开，请继续发送...\n":"服务器同意断开连接.连接断开\n");
         return res;
     }
@@ -166,7 +168,7 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
         //看认证是否成功
         if(recv_pkt.type == CONNECT){
             //认证成功
-            printf("连接建立成功\n");
+
             is_connected = 1;
         }else{
             //认证失败
@@ -176,6 +178,7 @@ void udp_msg_sender(int fd, struct sockaddr* dst)
     }
 
 if(is_connected){
+    printf("连接建立成功,开始发送数据\n");
     client_handle_connected(fd, dst);
 }else {
     printf("认证失败，服务器断开连接....\n");

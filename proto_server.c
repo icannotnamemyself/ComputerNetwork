@@ -31,13 +31,15 @@ void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
          packet_print(stdout, &recv_pkt);
 
 
-         if(recv_pkt.data_len ==0){
+         if(recv_pkt.data_len ==0 || recv_pkt.type == DISCONNECT){
              printf("客户端想要断开连接，是否同意?(0/1):");
              scanf(" %d", &is_disconnect);
 
+             unsigned char buf3[1];
+             sprintf(buf3 , "%c", 0xff);
 
              send_proto_packet(fd , oclent_addr,is_disconnect?DISCONNECT:CONNECT
-                               ,0,"",send_buf
+                               ,1,buf3,send_buf
                                );
 
 
