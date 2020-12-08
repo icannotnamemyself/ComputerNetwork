@@ -9,8 +9,7 @@
 #define MAX_DATA 35535//max data length 16bytes
 #define PACKET_LEN 35540
 #define VERSION 5 //协议版本号
-//双方约定的口令
-//extern char * TOKEN ="ABCDEFG";
+
 
  enum PROCOL_DATATYPE{
     CONNECT = 1,   //建立连接

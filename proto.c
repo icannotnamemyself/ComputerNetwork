@@ -19,26 +19,26 @@ void packet_buf_print(FILE * stream , char* send_buf){
 //    fprintf(stream, "data: %s \n" , send_buf+4);
 //    fprintf(stream, "check_sum:%x\n" , send_buf[PACKET_LEN -1]);
 
-    fprintf(stream, "=============packet info start=============");
+    fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "version:%x\n", send_buf[0]);
     fprintf(stream , "type: %x\n", send_buf[1]);
     fprintf(stream, "data_len:%x bytes\n", * (unsigned short *)(send_buf+2));
     fprintf(stream, "data: %s \n" , send_buf+4);
     fprintf(stream, "check_sum:%x\n" , send_buf[PACKET_LEN -1]);
-    fprintf(stream, "=============packet info end=============");
+    fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "\n");
 }
 
 
 
 void packet_print(FILE * stream , struct procol_packet * pkt){
-    fprintf(stream, "=============packet info start=============");
+    fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "version:%x\n", pkt->version);
     fprintf(stream , "type: %x\n", pkt->type);
     fprintf(stream, "data_len:%x bytes\n", pkt->data_len);
     fprintf(stream, "data: %s \n" , pkt->data);
     fprintf(stream, "check_sum:%x\n" , pkt->check_sum);
-    fprintf(stream, "=============packet info end=============");
+    fprintf(stream, "=============packet info=============\n");
     fprintf(stream , "\n");
 }
 void buffer_to_packet(const char * buf , struct  procol_packet * pkt){

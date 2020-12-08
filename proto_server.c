@@ -9,14 +9,19 @@
 #define SERVER_PORT 8888
 #define BUFF_LEN 1024
 
+//双方约定的口令
+char * TOKEN ="ABCDEFG";
+
 void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
 
      struct procol_packet recv_pkt;  //procol 协议
+     struct procol_packet pack;
      char recv_buf[PACKET_LEN];
+     char send_buf[PACKET_LEN];
      int count ;
      struct sockaddr_in clent_addr;
      int len = sizeof(clent_addr);
-
+     int is_disconnect;
      do{
          //接收客户端数据
          printf("wait for data...\n");
@@ -24,7 +29,35 @@ void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
 
          buffer_to_packet(recv_buf , &recv_pkt);
          packet_print(stdout, &recv_pkt);
-        fflush(stdout);
+
+
+         if(recv_pkt.data_len ==0){
+             printf("客户端想要断开连接，是否同意?(0/1):");
+             scanf(" %d", &is_disconnect);
+
+             pack.version = 5;
+             pack.type= is_disconnect?DISCONNECT:CONNECT;
+             pack.data_len= 0; //3 byte
+             memset(pack.data, 0, MAX_DATA); //set 0
+             memcpy(pack.data,  "", MAX_DATA);
+             pack.check_sum = 0; //no need to check
+             //cpy to send_buf
+             memcpy(send_buf, &pack, PACKET_LEN);
+             sendto(fd,  send_buf, PACKET_LEN, 0, oclent_addr, len);
+
+
+             if(is_disconnect){
+                 printf("断开连接\n");
+                 return ;
+             }else{
+                 printf("不同意断开，请求客户端继续发送..\n");
+             }
+         }
+
+
+
+
+         fflush(stdout);
      }while (1) ;
 }
 
@@ -57,9 +90,11 @@ void handle_udp_msg(int fd)
         return;
     }
     printf("recieve data success!\n");
+    fflush(stdout);
+    fflush(stdin);
     buffer_to_packet(recv_buf, &recv_pkt);
     if(recv_pkt.type == CONNECT)
-        printf("数据单元类型为1 : 建立连接\n");
+        printf("数据单元类型为1 ");
     else {
         printf("数据单元类型不正确, 退出程序\n");
         return ;
@@ -73,7 +108,7 @@ void handle_udp_msg(int fd)
     scanf(" %d", &is_cert);
 
 
-    if(is_cert=0){
+    if(is_cert){
 
     }else {
         //certificate pack
@@ -91,7 +126,6 @@ void handle_udp_msg(int fd)
         printf("建立连接......\n");
         //连接成功建立
         is_connected=1;
-
     }
 
     if(is_connected){
