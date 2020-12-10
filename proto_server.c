@@ -36,7 +36,7 @@ void server_handle_connected(int fd ,struct sockaddr_in *oclent_addr){
              scanf(" %d", &is_disconnect);
 
              unsigned char buf3[1];
-             sprintf(buf3 , "%c", 0xff);
+             sprintf(buf3 , "%c", is_disconnect?0xff:0x00);
 
              send_proto_packet(fd , oclent_addr,is_disconnect?DISCONNECT:CONNECT
                                ,1,buf3,send_buf

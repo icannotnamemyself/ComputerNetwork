@@ -27,11 +27,12 @@ void client_handle_connected(int fd , struct sockaddr* oserver_addr){
 
     while (1) {
         int res = send_data_pack(fd, oserver_addr);
-        if(!res) return ;//断开连接
+        if(res) return ;//断开连接
         sleep(1);
     }
 }
 
+// 1 : 断开 ， 0 : 连接
 int send_data_pack(int fd, struct sockaddr * dst){
 
     int len = sizeof (*dst);
@@ -77,12 +78,13 @@ int send_data_pack(int fd, struct sockaddr * dst){
 
         count = recvfrom(fd, recv_buf, PACKET_LEN, 0, (struct sockaddr*)&server_addr, &len);  //recvfrom是拥塞函数，没有数据就一直拥塞
         buffer_to_packet(recv_buf , &recv_pack);
-        int res = (unsigned char)send_pack.data[0] == 0xff;
-        printf("%s", res?"服务器拒绝断开，请继续发送...\n":"服务器同意断开连接.连接断开\n");
+        packet_print(stdout,  &recv_pack);
+        int res = ((unsigned char)recv_pack.data[0] == 0xff);
+        printf("%s", res?"服务器同意断开连接.连接断开\n ":"服务器拒绝断开，请继续发送...\n");
         return res;
     }
 
-    return 1;//默认保持连接
+    return 0;//默认保持连接
     /////
 }
 
